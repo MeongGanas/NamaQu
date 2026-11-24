@@ -1,0 +1,96 @@
+# Development lokal NamaQu.
+#   docker compose up -d --build
+#   backend  -> http://localhost:8010        (API: /api/..., admin: /admin)
+#   frontend -> http://localhost:3010
+services:
+  db:
+    image: mariadb:11.8
+    environment:
+      MARIADB_DATABASE: namaqu
+      MARIADB_USER: namaqu
+      MARIADB_PASSWORD: namaqu
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 20
+
+  backend:
+    build: ./docker/php
+    working_dir: /var/www/backend
+    command: sh -c "composer install --no-interaction && ln -sfn ../storage/app/public public/storage && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: namaqu
+      DB_USERNAME: namaqu
+      DB_PASSWORD: namaqu
+    volumes:
+      - ./backend:/var/www/backend
+    ports:
+      - "8010:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- -H 0.0.0.0"
+    environment:
+      WATCHPACK_POLLING: "true"
+      # dipakai server-side (container ke container)
+      API_URL: http://backend:8000/api
+      # dipakai browser
+      NEXT_PUBLIC_API_URL: http://localhost:8010/api
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "3010:3000"
+    depends_on:
+      - backend
+
+  # --- Simulasi server produksi (nginx + php-fpm, app di subpath /namaqu) ---
+  #   docker compose --profile subpath up -d --build fpm nginx
+  #   -> http://localhost:8090/namaqu/api/site , http://localhost:8090/namaqu/admin
+  fpm:
+    profiles: ["subpath"]
+    build: ./docker/php-fpm
+    # khusus simulasi: jalan sebagai root agar bisa menulis ke bind-mount Windows.
+    # Di server asli, cukup: chown -R www-data storage bootstrap/cache
+    command: ["sh", "-c", "sed -i -e 's/^user = www-data/user = root/' -e 's/^group = www-data/group = root/' /usr/local/etc/php-fpm.d/www.conf && php-fpm -R"]
+    environment:
+      APP_ENV: local
+      APP_URL: http://localhost:8090/namaqu
+      SESSION_PATH: /namaqu
+      SESSION_COOKIE: namaqu_session
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: namaqu
+      DB_USERNAME: namaqu
+      DB_PASSWORD: namaqu
+    volumes:
+      - ./backend:/var/www/namaqu/backend
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    profiles: ["subpath"]
+    image: nginx:1.29-alpine
+    command: sh -c "mkdir -p /var/www/api-root && ln -sfn /var/www/namaqu/backend/public /var/www/api-root/namaqu && nginx -g 'daemon off;'"
+    volumes:
+      - ./backend:/var/www/namaqu/backend:ro
+      - ./docker/nginx/subpath.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8090:80"
+    depends_on:
+      - fpm
+
+volumes:
+  dbdata:
+  frontend_node_modules:

@@ -1,0 +1,6 @@
+# root
+.DS_Store
+*.log
+
+# file sumber besar (GitHub menolak file > 100 MB)
+*.pdf

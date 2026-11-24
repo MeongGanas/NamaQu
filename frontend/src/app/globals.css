@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+/*
+ * NamaQu — mengikuti brand (TNC NamaQu.pdf & logo):
+ * langit malam biru-indigo-ungu, bulan & bintang kuning, kartu putih membulat,
+ * aksen warna-warni dari logo (koral, oranye, periwinkle).
+ */
+@theme {
+  /* langit malam */
+  --color-night: #16123f;
+  --color-night-2: #2b2072;
+  --color-orchid: #8e45b8;
+
+  /* aksen utama (ungu brand) */
+  --color-grape: #5b34c4;
+  --color-grape-dark: #3f2394;
+
+  /* bulan & bintang */
+  --color-sun: #ffd35c;
+  --color-sun-soft: #fff4cc;
+
+  /* warna logo */
+  --color-coral: #f6a29a;
+  --color-coral-soft: #fdeceb;
+  --color-tangerine: #f9bb5c;
+  --color-tangerine-soft: #fff1da;
+  --color-peri: #aebfee;
+  --color-peri-soft: #e9eefc;
+  --color-lilac: #cdbcf5;
+  --color-lilac-soft: #f1ebfd;
+
+  /* kertas & tinta */
+  --color-paper: #f8f6ff;
+  --color-ink: #1b1546;
+  --color-ink-soft: #5b5683;
+
+  --font-display: var(--font-lilita), "Arial Rounded MT Bold", system-ui, sans-serif;
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
+  /* aksen kecil (tanggal, catatan) memakai font judul juga, agar tetap satu keluarga brand */
+  --font-hand: var(--font-lilita), system-ui, sans-serif;
+
+  --shadow-pop: 4px 4px 0 0 var(--color-ink);
+  --shadow-pop-sm: 2px 2px 0 0 var(--color-ink);
+
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-wiggle: wiggle 3s ease-in-out infinite;
+  --animate-twinkle: twinkle 3.5s ease-in-out infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(6deg); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* bintang-bintang kecil samar di latar terang */
+  background-image: radial-gradient(color-mix(in oklab, var(--color-lilac) 70%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+::selection {
+  background: var(--color-sun);
+  color: var(--color-ink);
+}
+
+/* Font judul hanya punya satu ketebalan: jangan dipalsukan tebal/miring oleh browser. */
+.font-display,
+.font-hand {
+  font-synthesis: none;
+  letter-spacing: 0.01em;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink px-5 py-2.5 font-semibold transition-transform duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 disabled:opacity-60;
+    box-shadow: var(--shadow-pop-sm);
+  }
+  .btn:hover { box-shadow: var(--shadow-pop); }
+  .btn-primary { @apply bg-grape text-white; }
+  .btn-sun { @apply bg-sun text-ink; }
+  .btn-coral { @apply bg-coral text-ink; }
+  .btn-light { @apply bg-white text-ink; }
+
+  .card {
+    @apply rounded-3xl border-2 border-ink bg-white;
+    box-shadow: var(--shadow-pop);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border-[1.5px] border-ink px-3 py-0.5 text-xs font-semibold;
+  }
+
+  /* label section ala PDF brand: pill indigo dengan titik kuning */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full bg-night-2 py-1 pr-4 pl-1.5 text-sm font-semibold text-white;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply h-5 w-5 rounded-full bg-sun;
+  }
+
+  .stitch {
+    outline: 2px dashed color-mix(in oklab, var(--color-ink) 30%, transparent);
+    outline-offset: -10px;
+  }
+
+  /* latar langit malam berbintang */
+  .night-sky {
+    background-color: var(--color-night);
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 22%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 28% 68%, #fff 99%, transparent),
+      radial-gradient(1.5px 1.5px at 44% 14%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 61% 42%, #fff 99%, transparent),
+      radial-gradient(2px 2px at 78% 18%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 88% 64%, #fff 99%, transparent),
+      radial-gradient(1.5px 1.5px at 6% 80%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 52% 86%, #fff 99%, transparent),
+      linear-gradient(180deg, var(--color-night) 0%, var(--color-night-2) 100%);
+    color: white;
+  }
+  .night-sky-violet {
+    background-image:
+      radial-gradient(1.5px 1.5px at 15% 25%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 35% 70%, #fff 99%, transparent),
+      radial-gradient(2px 2px at 70% 20%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 85% 60%, #fff 99%, transparent),
+      radial-gradient(1.5px 1.5px at 55% 40%, #fff 99%, transparent),
+      linear-gradient(180deg, var(--color-night-2) 0%, var(--color-orchid) 100%);
+  }
+
+  /* tepi bergelombang seperti awan untuk pemisah section */
+  .scallop-bottom {
+    --r: 16px;
+    mask:
+      radial-gradient(var(--r) at 50% calc(100% - var(--r)), #000 99%, #0000 101%) 50% / calc(var(--r) * 2) 100% repeat-x,
+      linear-gradient(#000 0 0) top / 100% calc(100% - var(--r)) no-repeat;
+  }
+
+  .prose-namaqu {
+    @apply leading-relaxed text-ink-soft;
+  }
+  .prose-namaqu :where(p, ul, ol) { @apply my-3; }
+  .prose-namaqu :where(ul) { @apply list-disc pl-6; }
+  .prose-namaqu :where(ol) { @apply list-decimal pl-6; }
+  .prose-namaqu :where(h2, h3) { @apply mt-6 mb-2 font-display text-xl text-ink; }
+  .prose-namaqu :where(a) { @apply font-semibold text-grape underline underline-offset-4; }
+  .prose-namaqu :where(strong) { @apply font-semibold text-ink; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
