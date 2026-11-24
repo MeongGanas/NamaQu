@@ -19,7 +19,7 @@ class NamaQuTest extends TestCase
     {
         parent::setUp();
         \Illuminate\Support\Facades\Storage::fake('public');
-        $this->seed([SiteSettingSeeder::class, \Database\Seeders\NamaQuContentSeeder::class, DemoSeeder::class]);
+        $this->seed([SiteSettingSeeder::class, \Database\Seeders\NamaQuContentSeeder::class, \Database\Seeders\DriveContentSeeder::class, DemoSeeder::class]);
     }
 
     public static function apiEndpoints(): array
@@ -193,6 +193,56 @@ class NamaQuTest extends TestCase
         $this->getJson("/api/activities/{$activity->slug}")
             ->assertJsonCount(2, 'data.photos')
             ->assertJsonPath('data.album_url', 'https://drive.google.com/drive/folders/contoh');
+    }
+
+    public function test_drive_profile_content_is_seeded(): void
+    {
+        $site = $this->getJson('/api/site')->json('data');
+
+        $this->assertStringStartsWith('Mewujudkan generasi Indonesia', $site['vision']);
+        $this->assertCount(6, $site['missions']);
+        $this->assertSame(['QULEARN', 'QRAFT', 'QIDS'], array_column($site['programs'], 'code'));
+        $this->assertSame('30–40', $site['impact'][0]['value']);
+        $this->assertContains('Bidik Misi Mengajar ITS', $site['collab_partners']);
+        $this->assertSame('Keputih Tegal Timur Baru, Surabaya, Jawa Timur', $site['basecamp_address']);
+
+        $team = collect($this->getJson('/api/team')->json('data'));
+        $this->assertTrue($team->every(fn ($m) => $m['is_founder']), 'keenam pengurus adalah penggagas');
+        $this->assertNotNull($team->firstWhere('name', 'Fira Novi Puspita Saputri')['photo']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists('team/fira.jpg');
+
+        $modules = collect($this->getJson('/api/modules')->json('data'));
+        $this->assertNotNull($modules->firstWhere('title', 'Rangkaian Listrik Seri & Paralel'));
+        $this->assertSame('Bahasa Inggris', $modules->firstWhere('title', 'Bahasa Inggris Dasar')['category_label']);
+
+        $this->getJson('/api/activities/kegiatan-perdana-namaqu')->assertJsonPath('data.held_on', '2025-09-06');
+    }
+
+    public function test_drive_seeder_runs_once_and_keeps_admin_edits(): void
+    {
+        \App\Models\SiteSetting::put(['vision' => 'Visi diubah pengurus']);
+        \App\Models\TeamMember::where('name', 'Wulan Sari')->update(['is_founder' => false]);
+
+        $this->seed(\Database\Seeders\DriveContentSeeder::class);
+
+        $this->getJson('/api/site')->assertJsonPath('data.vision', 'Visi diubah pengurus');
+        $this->assertFalse(\App\Models\TeamMember::where('name', 'Wulan Sari')->value('is_founder'));
+        $this->assertSame(1, \App\Models\LearningModule::where('title', 'Matematika Logika')->count());
+    }
+
+    public function test_repeater_settings_saved_from_admin_come_back_as_lists(): void
+    {
+        $this->actingAs(User::first());
+
+        \Livewire\Livewire::test(\App\Filament\Pages\SiteSettings::class)
+            ->set('data.missions', ['a1b2' => ['text' => 'Misi pertama'], 'c3d4' => ['text' => 'Misi kedua']])
+            ->set('data.contacts', ['x9' => ['name' => 'Kak Ulen', 'purpose' => 'Narahubung', 'whatsapp' => '6285171539202']])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->getJson('/api/site')
+            ->assertJsonPath('data.missions', ['Misi pertama', 'Misi kedua'])
+            ->assertJsonPath('data.contacts.0.name', 'Kak Ulen');
     }
 
     public function test_guests_are_redirected_to_login(): void

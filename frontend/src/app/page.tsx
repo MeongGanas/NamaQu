@@ -4,29 +4,19 @@ import { ActivityCard, RecruitmentCard, TestimonialCard } from "@/components/car
 import { EmptyState, Heart, Marquee, Moon, SectionTitle, Sparkle, Squiggle, Star } from "@/components/decor";
 import { getActivities, getModules, getRecruitments, getSite, getTestimonials } from "@/lib/api";
 
+// Dipakai bila program unggulan belum diisi di admin.
 const PILLARS = [
-  {
-    icon: "✏️",
-    title: "Calistung",
-    text: "Membaca, menulis, dan berhitung sebagai bekal dasar.",
-    tone: "bg-coral-soft",
-    href: "/modul#calistung",
-  },
-  {
-    icon: "🧩",
-    title: "Logika & Matematika",
-    text: "Melatih nalar dan cara memecahkan masalah lewat permainan.",
-    tone: "bg-tangerine-soft",
-    href: "/modul#logika_matematika",
-  },
-  {
-    icon: "🎮",
-    title: "Game Coding",
-    text: "Kenalan dengan dasar pemrograman lewat game edukatif.",
-    tone: "bg-peri-soft",
-    href: "/modul#game_coding",
-  },
+  { code: "Calistung", name: null, description: "Membaca, menulis, dan berhitung sebagai bekal dasar." },
+  { code: "Logika & Matematika", name: null, description: "Melatih nalar dan cara memecahkan masalah lewat permainan." },
+  { code: "Game Coding", name: null, description: "Kenalan dengan dasar pemrograman lewat game edukatif." },
 ];
+
+const PROGRAM_LOOK: Record<string, { icon: string; href: string }> = {
+  QULEARN: { icon: "📚", href: "/modul" },
+  QRAFT: { icon: "🔧", href: "/modul#sains_teknologi" },
+  QIDS: { icon: "🎉", href: "/dokumentasi" },
+};
+const PROGRAM_TONES = ["bg-coral-soft", "bg-tangerine-soft", "bg-peri-soft", "bg-lilac-soft"];
 
 export default async function HomePage() {
   const [site, recruitments, activities, testimonials, modules] = await Promise.all([
@@ -37,6 +27,14 @@ export default async function HomePage() {
     getModules(),
   ]);
   const open = recruitments.filter((r) => r.is_open).slice(0, 3);
+  const programs = site.programs?.length ? site.programs : PILLARS;
+  // angka dampak dari admin; kalau kosong, hitung dari data yang ada
+  const impact = site.impact?.length
+    ? site.impact
+    : [
+        { value: `${site.stats.activities}+`, label: "kegiatan terdokumentasi" },
+        { value: String(modules.length), label: "modul untuk tingkat Kecil, Sedang & Besar" },
+      ];
 
   return (
     <>
@@ -72,14 +70,18 @@ export default async function HomePage() {
               <p className="font-hand text-2xl leading-none text-grape-dark">jadwal rutin</p>
               <p className="mt-2 font-display text-2xl font-semibold">{site.schedule_text ?? "Belajar bareng di basecamp"}</p>
             </div>
-            <div className="card absolute right-0 top-0 w-44 rotate-6 bg-tangerine p-5 text-ink sm:w-52">
-              <p className="font-display text-5xl font-bold">{site.stats.activities}+</p>
-              <p className="font-semibold">kegiatan terdokumentasi</p>
-            </div>
-            <div className="card absolute bottom-10 left-0 w-56 rotate-3 bg-peri p-5 text-ink sm:w-64">
-              <p className="font-display text-5xl font-bold">{modules.length}</p>
-              <p className="font-semibold">modul untuk tingkat Kecil, Sedang & Besar</p>
-            </div>
+            {impact[0] && (
+              <div className="card absolute right-0 top-0 w-44 rotate-6 bg-tangerine p-5 text-ink sm:w-52">
+                <p className="font-display text-5xl">{impact[0].value}</p>
+                <p className="font-semibold">{impact[0].label}</p>
+              </div>
+            )}
+            {impact[1] && (
+              <div className="card absolute bottom-10 left-0 w-56 rotate-3 bg-peri p-5 text-ink sm:w-64">
+                <p className="font-display text-5xl">{impact[1].value}</p>
+                <p className="font-semibold">{impact[1].label}</p>
+              </div>
+            )}
             <div className="card absolute bottom-0 right-0 -rotate-3 bg-sun px-4 py-3 text-ink">
               <p className="font-hand text-xl">📍 {site.basecamp_address ?? "Keputih, Surabaya"}</p>
             </div>
@@ -90,15 +92,21 @@ export default async function HomePage() {
       </section>
 
       <Marquee
-        items={["Volunteer mingguan dibuka", "Calistung", "Logika & Matematika", "Game Coding", "Basecamp Keputih", "Belajar sambil main"]}
+        items={[
+          ...programs.map((p) => (p.name ? `${p.code} · ${p.name}` : p.code)),
+          "Calistung",
+          "Sains & Teknologi",
+          "Basecamp Keputih",
+          "Belajar sambil main",
+        ]}
       />
 
       {/* OPEN RECRUITMENT */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle eyebrow="open recruitment" title="Yuk, jadi kakak volunteer!">
-            Volunteer mingguan dibuka tiap pekan untuk kegiatan hari Minggu. Untuk kegiatan besar seperti Hari Anak,
-            pendaftaran dibuka tiap bulan lewat formulir.
+            Volunteer mingguan dibuka tiap pekan untuk kegiatan akhir pekan. Untuk kegiatan besar seperti QIDS (Hari
+            Anak Nasional), pendaftaran dibuka lewat formulir.
           </SectionTitle>
           <Link href="/volunteer" className="btn btn-light mb-8">
             Semua info volunteer
@@ -124,22 +132,26 @@ export default async function HomePage() {
       {/* MATERI */}
       <section className="scallop-bottom border-y-2 border-ink bg-lilac-soft pb-24 pt-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <SectionTitle eyebrow="apa yang dipelajari?" title="Tiga materi, tiga tingkat" align="center">
-            Anak dikelompokkan ke tingkat Kecil, Sedang, dan Besar — bukan cuma berdasarkan usia, tapi juga kemampuan.
-            Orang tua bisa melihat materinya di sini.
+          <SectionTitle eyebrow="program unggulan" title="Belajar, berkarya, merayakan" align="center">
+            Materi disesuaikan dengan kemampuan tiap anak dalam tiga kelompok belajar: Kecil, Sedang, dan Besar. Orang
+            tua bisa melihat modulnya di sini.
           </SectionTitle>
           <div className="grid gap-6 md:grid-cols-3">
-            {PILLARS.map((p, i) => (
-              <Link
-                key={p.title}
-                href={p.href}
-                className={`card group p-7 transition-transform hover:-translate-y-1 ${p.tone} ${i === 1 ? "md:translate-y-6" : ""}`}
-              >
-                <span className="text-5xl">{p.icon}</span>
-                <h3 className="mt-4 font-display text-2xl font-semibold group-hover:text-grape">{p.title}</h3>
-                <p className="mt-2 text-ink-soft">{p.text}</p>
-              </Link>
-            ))}
+            {programs.map((p, i) => {
+              const look = PROGRAM_LOOK[p.code.toUpperCase()] ?? { icon: "⭐", href: "/modul" };
+              return (
+                <Link
+                  key={p.code}
+                  href={look.href}
+                  className={`card group p-7 transition-transform hover:-translate-y-1 ${PROGRAM_TONES[i % PROGRAM_TONES.length]} ${i === 1 ? "md:translate-y-6" : ""}`}
+                >
+                  <span className="text-5xl">{look.icon}</span>
+                  <h3 className="mt-4 font-display text-3xl group-hover:text-grape">{p.code}</h3>
+                  {p.name && <p className="text-sm font-semibold uppercase tracking-wider text-grape">{p.name}</p>}
+                  {p.description && <p className="mt-3 text-ink-soft">{p.description}</p>}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

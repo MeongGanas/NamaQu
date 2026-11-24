@@ -25,6 +25,11 @@ class PublicController extends Controller
         $s = SiteSetting::allAsArray();
 
         $s['about'] = $this->html($s['about'] ?? null);
+
+        // Repeater Filament menyimpan item dengan kunci UUID; frontend butuh daftar biasa.
+        foreach (['contacts', 'missions', 'programs', 'impact', 'milestones', 'collab_partners'] as $key) {
+            $s[$key] = array_values(array_filter((array) ($s[$key] ?? []), fn ($v) => filled($v)));
+        }
         $s['collab_terms'] = collect($s['collab_terms'] ?? [])->map(fn ($t) => [
             'title' => $t['title'] ?? '',
             'optional' => (bool) ($t['optional'] ?? false),

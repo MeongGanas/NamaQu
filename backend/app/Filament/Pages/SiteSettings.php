@@ -7,6 +7,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -40,8 +41,9 @@ class SiteSettings extends Page
     /** Field yang disimpan di tabel site_settings. */
     public const KEYS = [
         'tagline', 'hero_title', 'hero_subtitle', 'about', 'basecamp_address', 'maps_url', 'schedule_text',
+        'vision', 'missions', 'programs', 'impact', 'milestones',
         'instagram', 'tiktok', 'linkedin', 'email', 'contacts',
-        'collab_intro', 'collab_terms', 'collab_contact',
+        'collab_intro', 'collab_terms', 'collab_contact', 'collab_partners',
     ];
 
     public ?array $data = [];
@@ -63,6 +65,32 @@ class SiteSettings extends Page
                     TextInput::make('basecamp_address')->label('Alamat basecamp'),
                     TextInput::make('maps_url')->label('Link Google Maps')->url(),
                     TextInput::make('schedule_text')->label('Jadwal rutin')->placeholder('Setiap Minggu, 08.00 - 11.00 WIB'),
+                ]),
+                Tab::make('Visi, Misi & Program')->icon(Heroicon::OutlinedSparkles)->schema([
+                    Textarea::make('vision')->label('Visi')->rows(3),
+                    Repeater::make('missions')->label('Misi')->defaultItems(0)->reorderable()
+                        ->addActionLabel('Tambah misi')
+                        ->simple(Textarea::make('text')->rows(2)->required()),
+                    Repeater::make('programs')->label('Program unggulan')->defaultItems(0)->reorderable()->collapsible()
+                        ->itemLabel(fn (array $state): ?string => $state['code'] ?? null)
+                        ->addActionLabel('Tambah program')
+                        ->schema([
+                            TextInput::make('code')->label('Kode')->placeholder('QULEARN')->required(),
+                            TextInput::make('name')->label('Nama lengkap')->placeholder('NamaQu Learning'),
+                            Textarea::make('description')->label('Penjelasan')->rows(3)->columnSpanFull(),
+                        ])->columns(2),
+                    Repeater::make('impact')->label('Angka dampak (tampil di beranda & tentang)')->defaultItems(0)->reorderable()
+                        ->addActionLabel('Tambah angka')
+                        ->schema([
+                            TextInput::make('value')->label('Angka')->placeholder('30–40')->required(),
+                            TextInput::make('label')->label('Keterangan')->placeholder('anak didampingi')->required(),
+                        ])->columns(2),
+                    Repeater::make('milestones')->label('Perjalanan (linimasa)')->defaultItems(0)->reorderable()
+                        ->addActionLabel('Tambah momen')
+                        ->schema([
+                            TextInput::make('date')->label('Waktu')->placeholder('8 Agustus 2025')->required(),
+                            TextInput::make('title')->label('Momen')->required(),
+                        ])->columns(2),
                 ]),
                 Tab::make('Kontak & Media Sosial')->icon(Heroicon::OutlinedPhone)->schema([
                     TextInput::make('instagram')->label('Instagram (username)')->prefix('@'),
@@ -97,6 +125,8 @@ class SiteSettings extends Page
                         TextInput::make('collab_contact.name')->label('Nama'),
                         TextInput::make('collab_contact.whatsapp')->label('No. WhatsApp')->tel(),
                     ]),
+                    TagsInput::make('collab_partners')->label('Pernah berkolaborasi dengan')
+                        ->placeholder('Ketik nama mitra lalu Enter'),
                 ]),
             ]),
         ]);

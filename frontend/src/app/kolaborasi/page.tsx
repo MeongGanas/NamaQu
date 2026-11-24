@@ -50,6 +50,19 @@ export default async function CollaborationPage() {
           <EmptyState>Ketentuan kerja sama akan segera ditampilkan.</EmptyState>
         )}
 
+        {(site.collab_partners ?? []).length > 0 && (
+          <div className="mt-14 text-center">
+            <p className="eyebrow mb-4">pernah berkolaborasi dengan</p>
+            <ul className="flex flex-wrap justify-center gap-3">
+              {site.collab_partners!.map((p, i) => (
+                <li key={p} className={`card px-5 py-3 font-semibold ${["-rotate-1", "rotate-1"][i % 2]}`}>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="card relative mt-14 flex flex-col items-start gap-5 overflow-hidden bg-grape p-8 text-white sm:flex-row sm:items-center sm:justify-between">
           <Sparkle className="absolute right-6 top-4 h-8 w-8" color="var(--color-sun)" />
           <div className="flex items-center gap-4">

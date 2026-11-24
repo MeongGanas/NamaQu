@@ -16,6 +16,8 @@ const CATEGORIES = [
   { id: "all", label: "Semua materi" },
   { id: "calistung", label: "✏️ Calistung" },
   { id: "logika_matematika", label: "🧩 Logika & Matematika" },
+  { id: "bahasa_inggris", label: "🔤 Bahasa Inggris" },
+  { id: "sains_teknologi", label: "🔬 Sains & Teknologi" },
   { id: "game_coding", label: "🎮 Game Coding" },
 ] as const;
 

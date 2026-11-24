@@ -106,6 +106,17 @@ App backend lain nanti cukup: buat symlink baru di `/var/www/api-root/<nama>` da
 
 ## 4. Cloudflare Tunnel
 
+> **Server saat ini:** `api.meongganas.my.id` di tunnel sudah mengarah ke `127.0.0.1:80`
+> (dipakai aplikasi Laundry & `/waroeng/`). Jangan ubah tunnel — cukup sisipkan proxy `/namaqu/`
+> ke server block port 80 tersebut:
+> ```bash
+> sudo cp /var/www/namaqu/deploy/nginx/namaqu-proxy.conf /etc/nginx/snippets/
+> sudo cp /etc/nginx/sites-available/api.meongganas.my.id ~/api.meongganas.my.id.bak
+> sudo sed -i '0,/^    location \/waroeng\/ {/s//    include snippets\/namaqu-proxy.conf;\n\n    location \/waroeng\/ {/' /etc/nginx/sites-available/api.meongganas.my.id
+> sudo nginx -t && sudo systemctl reload nginx
+> ```
+> Bagian di bawah ini hanya untuk domain/tunnel yang belum dipakai aplikasi lain.
+
 `cloudflared` sudah jalan sebagai service. Tambahkan hostname publik:
 
 - **Kalau tunnel dikelola dari dashboard** (Zero Trust → Networks → Tunnels → tunnel kamu → *Public Hostname* → Add):

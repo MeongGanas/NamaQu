@@ -18,6 +18,8 @@ class LearningModule extends Model
     public const CATEGORIES = [
         'calistung' => 'Calistung',
         'logika_matematika' => 'Logika & Matematika',
+        'bahasa_inggris' => 'Bahasa Inggris',
+        'sains_teknologi' => 'Sains & Teknologi',
         'game_coding' => 'Game Coding',
     ];
 

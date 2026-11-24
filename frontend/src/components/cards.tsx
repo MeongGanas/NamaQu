@@ -12,6 +12,8 @@ const LEVEL_TONE: Record<LearningModule["level"], string> = {
 const CATEGORY_ICON: Record<LearningModule["category"], string> = {
   calistung: "✏️",
   logika_matematika: "🧩",
+  bahasa_inggris: "🔤",
+  sains_teknologi: "🔬",
   game_coding: "🎮",
 };
 

@@ -28,7 +28,7 @@ export type LearningModule = {
   summary: string | null;
   level: "kecil" | "sedang" | "besar";
   level_label: string;
-  category: "calistung" | "logika_matematika" | "game_coding";
+  category: "calistung" | "logika_matematika" | "bahasa_inggris" | "sains_teknologi" | "game_coding";
   category_label: string;
   difficulty: number;
   difficulty_label: string | null;
@@ -94,6 +94,11 @@ export type Site = {
   basecamp_address: string | null;
   maps_url: string | null;
   schedule_text: string | null;
+  vision?: string | null;
+  missions?: string[];
+  programs?: Program[];
+  impact?: { value: string; label: string }[];
+  milestones?: { date: string; title: string }[];
   instagram: string | null;
   tiktok: string | null;
   linkedin: string | null;
@@ -102,8 +107,11 @@ export type Site = {
   collab_intro: string | null;
   collab_terms: CollabTerm[];
   collab_contact: { name?: string | null; whatsapp?: string | null } | null;
+  collab_partners?: string[];
   stats: { activities: number; modules: number; volunteers: number };
 };
+
+export type Program = { code: string; name?: string | null; description?: string | null };
 
 // ------------------------------------------------------------------ helpers
 

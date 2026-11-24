@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
         // Pengurus & testimoni asli (dari Google Drive NamaQu).
         $this->call(NamaQuContentSeeder::class);
 
+        // Profil komunitas, visi-misi, program, modul dari dokumen Drive (sekali jalan, lihat VERSION).
+        $this->call(DriveContentSeeder::class);
+
         // Data contoh + akun admin lokal, HANYA untuk development.
         if (app()->isLocal()) {
             $this->call(DemoSeeder::class);

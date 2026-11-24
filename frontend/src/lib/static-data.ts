@@ -82,7 +82,7 @@ const moduleRows: [string, LearningModule["level"], LearningModule["category"], 
 ];
 
 const LEVELS = { kecil: "Tingkat Kecil", sedang: "Tingkat Sedang", besar: "Tingkat Besar" } as const;
-const CATEGORIES = { calistung: "Calistung", logika_matematika: "Logika & Matematika", game_coding: "Game Coding" } as const;
+const CATEGORIES = { calistung: "Calistung", logika_matematika: "Logika & Matematika", bahasa_inggris: "Bahasa Inggris", sains_teknologi: "Sains & Teknologi", game_coding: "Game Coding" } as const;
 const DIFFICULTIES = { 1: "Mudah", 2: "Sedang", 3: "Menantang" } as const;
 
 const slugify = (s: string) =>
