@@ -159,6 +159,42 @@ class NamaQuTest extends TestCase
             ->assertJsonPath('data.hero_title', 'Judul baru');
     }
 
+    public function test_admin_can_publish_activity_with_photos(): void
+    {
+        $this->actingAs(User::first());
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Activities\Pages\CreateActivity::class)
+            ->fillForm([
+                'title' => 'Belajar Minggu: Membaca Cerita',
+                'type' => 'weekly',
+                'held_on' => '2026-11-22',
+                'summary' => 'Adik-adik membaca buku cerita bersama.',
+                'photos' => [
+                    \Illuminate\Http\UploadedFile::fake()->image('a.jpg', 1200, 900),
+                    \Illuminate\Http\UploadedFile::fake()->image('b.jpg', 1200, 900),
+                ],
+                'album_url' => 'https://drive.google.com/drive/folders/contoh',
+                'is_published' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $activity = \App\Models\Activity::where('title', 'Belajar Minggu: Membaca Cerita')->firstOrFail();
+        $this->assertCount(2, $activity->photos);
+        foreach ($activity->photos as $path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->assertExists($path);
+        }
+
+        // muncul di daftar (sampul otomatis dari foto pertama) & detail
+        $list = collect($this->getJson('/api/activities')->json('data'))->firstWhere('slug', $activity->slug);
+        $this->assertSame(2, $list['photo_count']);
+        $this->assertStringContainsString('/storage/activities/photos/', $list['cover']);
+
+        $this->getJson("/api/activities/{$activity->slug}")
+            ->assertJsonCount(2, 'data.photos')
+            ->assertJsonPath('data.album_url', 'https://drive.google.com/drive/folders/contoh');
+    }
+
     public function test_guests_are_redirected_to_login(): void
     {
         $this->get('/admin/recruitments')->assertRedirect('/admin/login');

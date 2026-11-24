@@ -144,6 +144,7 @@ class PublicController extends Controller
                 'title' => $v['title'] ?? null,
                 'url' => $v['url'] ?? null,
             ])->values(),
+            'album_url' => $a->album_url,
         ]);
     }
 

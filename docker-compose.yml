@@ -1,7 +1,10 @@
-# Development lokal NamaQu.
+# Development lokal NamaQu: Docker hanya untuk backend + database.
 #   docker compose up -d --build
+#   docker compose exec backend composer install   # sekali saja / saat composer.lock berubah
 #   backend  -> http://localhost:8010        (API: /api/..., admin: /admin)
-#   frontend -> http://localhost:3010
+#
+# Frontend dijalankan langsung di Windows (lebih ringan & hot-reload cepat):
+#   cd frontend && npm install && npm run dev      -> http://localhost:3010
 services:
   db:
     image: mariadb:11.8
@@ -20,8 +23,11 @@ services:
   backend:
     build: ./docker/php
     working_dir: /var/www/backend
-    command: sh -c "composer install --no-interaction && ln -sfn ../storage/app/public public/storage && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+    # composer install sengaja tidak dijalankan tiap start (lambat di Docker Windows)
+    command: sh -c "[ -d vendor ] || composer install --no-interaction; ln -sfn ../storage/app/public public/storage && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
     environment:
+      # artisan serve melayani beberapa request paralel (foto, CSS admin, API)
+      PHP_CLI_SERVER_WORKERS: 4
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
@@ -35,24 +41,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  frontend:
-    image: node:24-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- -H 0.0.0.0"
-    environment:
-      WATCHPACK_POLLING: "true"
-      # dipakai server-side (container ke container)
-      API_URL: http://backend:8000/api
-      # dipakai browser
-      NEXT_PUBLIC_API_URL: http://localhost:8010/api
-    volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
-    ports:
-      - "3010:3000"
-    depends_on:
-      - backend
 
   # --- Simulasi server produksi (nginx + php-fpm, app di subpath /namaqu) ---
   #   docker compose --profile subpath up -d --build fpm nginx
@@ -93,4 +81,3 @@ services:
 
 volumes:
   dbdata:
-  frontend_node_modules:

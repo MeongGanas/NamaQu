@@ -19,7 +19,7 @@ export default async function TestimonialsPage() {
       </PageHero>
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         {items.length ? (
-          <div className="columns-1 gap-6 md:columns-2 lg:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
+          <div className="grid items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t, i) => (
               <TestimonialCard key={t.id} t={t} i={i} />
             ))}

@@ -53,6 +53,7 @@ export type Activity = {
   description?: string | null;
   photos?: string[];
   videos?: { title: string | null; url: string }[];
+  album_url?: string | null;
 };
 
 export type TeamMember = {

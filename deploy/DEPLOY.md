@@ -121,13 +121,28 @@ Cek dari luar: `https://api.meongganas.my.id/namaqu/up` → 200.
 
 ## 5. Frontend di Vercel
 
-1. Vercel → *Add New Project* → import repo → **Root Directory: `frontend`**.
-2. Environment Variables (lihat [`frontend/.env.example`](../frontend/.env.example)):
+### 5a. Pratinjau desain dulu (tanpa backend)
+
+Frontend bisa di-host lebih dulu memakai **data statis** bawaan
+([`frontend/src/lib/static-data.ts`](../frontend/src/lib/static-data.ts)): pengurus, testimoni,
+kontak & T&C asli; open recruitment, modul & dokumentasi masih contoh.
+
+1. Vercel → *Add New Project* → import repo GitHub → **Root Directory: `frontend`**.
+2. **Jangan isi Environment Variables apa pun** → otomatis mode pratinjau.
+3. Deploy. Footer menampilkan "Versi pratinjau · sebagian data masih contoh";
+   formulir pendaftaran menyarankan menghubungi narahubung via WhatsApp.
+
+Untuk mengubah isi pratinjau, edit `static-data.ts` lalu push — Vercel deploy ulang otomatis.
+
+### 5b. Sambungkan ke backend (setelah server siap)
+
+1. Di Vercel → Project Settings → Environment Variables, isi (lihat [`frontend/.env.example`](../frontend/.env.example)):
    - `API_URL` dan `NEXT_PUBLIC_API_URL` = `https://api.meongganas.my.id/namaqu/api`
    - `NEXT_PUBLIC_SITE_URL` = domain Vercel kamu
    - `REVALIDATE_SECRET` = string acak panjang (`openssl rand -hex 32`)
-3. Deploy. **Saat build, API di STB harus online** — Next.js mengambil data untuk pre-render.
-4. Di server, isi `.env` backend:
+2. Redeploy. **Saat build, API di STB harus online** — Next.js mengambil data untuk pre-render.
+   Website langsung memakai data dari admin; data statis tidak dipakai lagi.
+3. Di server, isi `.env` backend:
    `FRONTEND_REVALIDATE_URL=https://<domain-vercel>/api/revalidate` dan
    `FRONTEND_REVALIDATE_SECRET=<sama dengan REVALIDATE_SECRET>`, lalu `php artisan optimize`.
 

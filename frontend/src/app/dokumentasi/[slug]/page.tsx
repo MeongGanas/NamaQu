@@ -52,16 +52,37 @@ export default async function ActivityPage({ params }: PageProps<"/dokumentasi/[
 
       {a.description && <RichText html={a.description} className="mt-10 max-w-3xl text-lg" />}
 
-      {photos.length > 0 && (
+      {(photos.length > 0 || a.album_url) && (
         <section className="mt-14">
-          <h2 className="font-display text-2xl font-semibold">Galeri foto</h2>
-          <div className="mt-6 columns-2 gap-4 sm:columns-3 [&>*]:mb-4">
-            {photos.map((src, i) => (
-              <a key={src} href={src} target="_blank" rel="noreferrer" className="block break-inside-avoid overflow-hidden rounded-2xl border-2 border-ink">
-                <Image src={src} alt={`Foto ${i + 1} — ${a.title}`} width={800} height={800} sizes="(min-width: 640px) 33vw, 50vw" className="h-auto w-full" />
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="font-display text-2xl">Galeri foto</h2>
+            {a.album_url && (
+              <a href={a.album_url} target="_blank" rel="noreferrer" className="btn btn-sun text-sm">
+                📁 Lihat album lengkap
               </a>
-            ))}
+            )}
           </div>
+          {photos.length > 0 && (
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {photos.map((src, i) => (
+                <a
+                  key={src}
+                  href={src}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`relative block aspect-square overflow-hidden rounded-2xl border-2 border-ink ${i % 5 === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}
+                >
+                  <Image
+                    src={src}
+                    alt={`Foto ${i + 1} — ${a.title}`}
+                    fill
+                    sizes="(min-width: 640px) 33vw, 50vw"
+                    className="object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

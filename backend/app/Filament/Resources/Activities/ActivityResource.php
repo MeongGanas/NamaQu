@@ -53,7 +53,11 @@ class ActivityResource extends Resource
                 TextInput::make('slug')->helperText('Kosongkan untuk dibuat otomatis.')->unique(ignoreRecord: true),
                 Textarea::make('summary')->label('Deskripsi singkat')->rows(2)->columnSpanFull(),
                 RichEditor::make('description')->label('Cerita kegiatan & aktivitas pembelajaran')->columnSpanFull(),
-                Uploads::gallery('photos', 'activities/photos', 40)->label('Foto kegiatan')->columnSpanFull(),
+                Uploads::gallery('photos', 'activities/photos', 40)->label('Foto kegiatan')->columnSpanFull()
+                    ->helperText('Pilih 10–20 foto terbaik (bisa sekaligus banyak). Foto otomatis dikecilkan sebelum di-upload.'),
+                TextInput::make('album_url')->label('Link album lengkap (opsional)')->url()->columnSpanFull()
+                    ->placeholder('https://drive.google.com/drive/folders/...')
+                    ->helperText('Semua foto lainnya cukup disimpan di Google Drive / Google Photos, lalu tempel link-nya di sini.'),
                 Repeater::make('videos')->label('Video (YouTube / Instagram)')->columnSpanFull()
                     ->helperText('Upload video ke YouTube/Instagram dulu, lalu tempel link-nya di sini — supaya tidak membebani server.')
                     ->schema([
@@ -64,7 +68,8 @@ class ActivityResource extends Resource
             Section::make('Detail')->schema([
                 Select::make('type')->label('Jenis')->options(Activity::TYPES)->default('weekly')->required(),
                 DatePicker::make('held_on')->label('Tanggal')->native(false)->required()->default(now()),
-                Uploads::image('cover', 'activities', 1600)->label('Foto sampul'),
+                Uploads::image('cover', 'activities', 1600)->label('Foto sampul')
+                    ->helperText('Kosongkan untuk memakai foto kegiatan pertama.'),
                 Toggle::make('is_published')->label('Tampilkan di website')->default(true),
             ]),
         ]);

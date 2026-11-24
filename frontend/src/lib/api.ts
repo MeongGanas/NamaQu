@@ -5,11 +5,17 @@ import type { Activity, LearningModule, Recruitment, Site, TeamMember, Testimoni
 export * from "./shared";
 
 /**
- * Semua data diambil dari API Laravel di server rumah (STB Armbian).
- * Hasilnya di-cache di Vercel, jadi STB hanya kena request sesekali dan
- * website tetap tampil (versi cache terakhir) walau STB sedang offline.
+ * Sumber data:
+ * - API Laravel di server rumah (STB Armbian) bila API_URL / NEXT_PUBLIC_API_URL di-set.
+ *   Hasilnya di-cache di Vercel, jadi STB hanya kena request sesekali dan
+ *   website tetap tampil (versi cache terakhir) walau STB sedang offline.
+ * - Data statis bawaan (src/lib/static-data.ts) bila belum ada backend, atau DATA_SOURCE=static.
+ *   Dipakai untuk mempublikasikan desain lebih dulu.
  */
-const API_URL = (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api").replace(/\/$/, "");
+const RAW_API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "";
+const API_URL = RAW_API_URL.replace(/\/$/, "");
+
+export const IS_STATIC = process.env.DATA_SOURCE === "static" || !API_URL;
 
 export const CACHE_TAG = "namaqu";
 
@@ -19,6 +25,10 @@ export const CACHE_TAG = "namaqu";
  * 404 dikembalikan sebagai null supaya halaman bisa memanggil notFound().
  */
 async function get<T>(path: string): Promise<T | null> {
+  if (IS_STATIC) {
+    const { staticGet } = await import("./static-data");
+    return (staticGet(path) as T | null) ?? null;
+  }
   const res = await fetch(`${API_URL}${path}`, { headers: { Accept: "application/json" } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
@@ -91,6 +101,14 @@ export async function getTestimonials() {
 
 /** Dipakai server action pendaftaran (tidak di-cache). */
 export async function postRegistration(slug: string, body: Record<string, string>) {
+  if (IS_STATIC) {
+    return {
+      ok: false,
+      message:
+        "Pendaftaran online belum aktif di versi pratinjau ini. Untuk mendaftar, hubungi narahubung NamaQu lewat WhatsApp di halaman Kontak, ya!",
+      errors: undefined as Record<string, string[]> | undefined,
+    };
+  }
   const res = await fetch(`${API_URL}/recruitments/${encodeURIComponent(slug)}/register`, {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },

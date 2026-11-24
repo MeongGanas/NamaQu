@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { getSite, igLink, tiktokLink, waLink } from "@/lib/api";
+import { IS_STATIC, getSite, igLink, tiktokLink, waLink } from "@/lib/api";
 import Image from "next/image";
 import { Heart } from "./decor";
+
+// /api -> /admin, mis. https://api.meongganas.my.id/namaqu/admin
+const ADMIN_URL = (process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? "").replace(/\/api\/?$/, "/admin");
 
 const NAV = [
   { href: "/volunteer", label: "Volunteer" },
@@ -148,9 +151,21 @@ export async function Footer() {
         </div>
       </div>
       <div className="border-t border-paper/15">
-        <p className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-5 text-sm text-paper/50 sm:px-6">
-          <Heart className="h-4 w-4" /> NamaQu · Basecamp Keputih, Surabaya
-        </p>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-sm text-paper/50 sm:px-6">
+          <p className="flex items-center gap-2">
+            <Heart className="h-4 w-4" /> NamaQu · Basecamp Keputih, Surabaya
+          </p>
+          {IS_STATIC ? (
+            <p className="rounded-full border border-paper/25 px-3 py-1">
+              ✨ Versi pratinjau · sebagian data masih contoh
+            </p>
+          ) : (
+            /* panel admin (Filament) di backend — untuk pengurus mengelola isi website */
+            <a href={ADMIN_URL} className="rounded-full border border-paper/25 px-3 py-1 hover:border-sun hover:text-sun">
+              🔒 Masuk pengurus
+            </a>
+          )}
+        </div>
       </div>
     </footer>
   );
