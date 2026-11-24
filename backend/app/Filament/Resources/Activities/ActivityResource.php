@@ -80,7 +80,7 @@ class ActivityResource extends Resource
         return $table
             ->defaultSort('held_on', 'desc')
             ->columns([
-                ImageColumn::make('cover')->label('')->disk('public')->square(),
+                ImageColumn::make('cover')->label('')->disk(config('filesystems.media'))->square(),
                 TextColumn::make('title')->label('Kegiatan')->searchable()->wrap(),
                 TextColumn::make('type')->label('Jenis')->badge()
                     ->formatStateUsing(fn ($state) => Activity::TYPES[$state] ?? $state)

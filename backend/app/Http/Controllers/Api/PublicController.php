@@ -214,7 +214,7 @@ class PublicController extends Controller
 
     private function file(?string $path): ?string
     {
-        return $path ? Storage::disk('public')->url($path) : null;
+        return $path ? Storage::disk(config('filesystems.media'))->url($path) : null;
     }
 
     private function html(?string $html): ?string

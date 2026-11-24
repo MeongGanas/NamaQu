@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Filesystem\CloudinaryAdapter;
 use App\Models\Activity;
+use Cloudinary\Cloudinary;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem;
 use App\Models\LearningModule;
 use App\Models\Recruitment;
 use App\Models\SiteSetting;
@@ -26,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
         }
+
+        // Driver disk "cloudinary" (config/filesystems.php).
+        Storage::extend('cloudinary', function ($app, array $config) {
+            $adapter = new CloudinaryAdapter(new Cloudinary((string) $config['cloudinary_url']), $config['folder'] ?? 'namaqu');
+
+            return new FilesystemAdapter(new Filesystem($adapter, $config), $adapter, $config);
+        });
 
         // Setiap konten berubah di admin -> minta frontend (Vercel) memperbarui cache-nya.
         foreach ([Activity::class, LearningModule::class, Recruitment::class, SiteSetting::class, TeamMember::class, Testimonial::class] as $model) {

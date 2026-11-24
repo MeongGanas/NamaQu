@@ -10,7 +10,7 @@ Cloudflare ──tunnel──► STB Armbian ─ nginx :8090 ─► /namaqu → 
 
 - API publik  : `https://api.meongganas.my.id/namaqu/api/...`
 - Panel admin : `https://api.meongganas.my.id/namaqu/admin`
-- Upload foto : disimpan di HDD `/mnt/hdd/namaqu/uploads`
+- Upload foto : disimpan & disajikan dari **Cloudinary** (gratis), tidak memakan disk/bandwidth STB
 
 ---
 
@@ -70,18 +70,18 @@ php artisan migrate --force --seed                    # di production hanya meng
 php artisan make:filament-user                        # akun admin untuk pengurus
 ```
 
-### Upload foto ke HDD (bukan ke eMMC yang sisa 1,8 GB)
+### Foto di Cloudinary (bukan di disk server)
 
-```bash
-sudo mkdir -p /mnt/hdd/namaqu/uploads
-sudo -u www-data touch /mnt/hdd/namaqu/uploads/.test && echo "HDD bisa ditulis www-data"
-rm -rf storage/app/public && ln -s /mnt/hdd/namaqu/uploads storage/app/public
-php artisan storage:link
-```
+1. Daftar gratis di cloudinary.com → Dashboard → salin **API environment variable**
+   (`cloudinary://<api_key>:<api_secret>@<cloud_name>`).
+2. Isi di `.env` backend: `MEDIA_DISK=cloudinary` dan `CLOUDINARY_URL=<nilai tadi>`.
+3. Tes koneksi sebelum seeding (harus mencetak URL `https://res.cloudinary.com/...`):
+   ```bash
+   php artisan tinker --execute='Storage::disk("cloudinary")->put("tes/ping.png", base64_decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")); echo Storage::disk("cloudinary")->url("tes/ping.png"), PHP_EOL;'
+   ```
 
-> HDD-nya NTFS (`fuseblk`). Kalau tes tulis di atas gagal, tambahkan `uid=33,gid=33,umask=002`
-> (33 = www-data) pada opsi mount `/mnt/hdd` di `/etc/fstab`, lalu `sudo mount -o remount /mnt/hdd`.
-> **Database jangan ditaruh di NTFS** — biarkan MariaDB di `/var/lib/mysql`.
+Foto disimpan di folder `namaqu/` pada Media Library Cloudinary. **Database tetap di server**
+(MariaDB, `/var/lib/mysql`).
 
 ```bash
 bash /var/www/namaqu/deploy/deploy.sh      # optimize, filament:optimize, izin folder, reload fpm
@@ -153,10 +153,12 @@ Tanpa itu pun cache tetap diperbarui otomatis tiap ±1 jam.
 
 - **Update kode**: `git push` di laptop → di server `bash /var/www/namaqu/deploy/deploy.sh`.
   Frontend ter-deploy otomatis oleh Vercel.
-- **Backup DB harian ke HDD** (`crontab -e`):
+- **Backup DB harian** (ukurannya kecil, cukup di folder home):
+  ```bash
+  mkdir -p ~/backup-namaqu
+  printf "[client]\nuser=namaqu\npassword=%s\n" "<password-db>" > ~/.my.cnf && chmod 600 ~/.my.cnf
+  (crontab -l 2>/dev/null; echo '0 3 * * * mysqldump namaqu | gzip > $HOME/backup-namaqu/namaqu-$(date +\%a).sql.gz') | crontab -
   ```
-  0 3 * * * mysqldump -unamaqu -p'<password>' namaqu | gzip > /mnt/hdd/namaqu/backup-$(date +\%a).sql.gz
-  ```
-  (menyimpan 7 file bergilir: Senin–Minggu.)
+  (menyimpan 7 file bergilir: Senin–Minggu. Foto sudah aman di Cloudinary.)
 - **Jangan jalankan `php artisan test` di server** tanpa perlu — test sudah dikunci agar menolak
   berjalan selain di SQLite in-memory, tapi tetap tidak ada gunanya di production.

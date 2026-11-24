@@ -66,7 +66,7 @@ class TeamMemberResource extends Resource
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->columns([
-                ImageColumn::make('photo')->label('')->disk('public')->circular(),
+                ImageColumn::make('photo')->label('')->disk(config('filesystems.media'))->circular(),
                 TextColumn::make('name')->label('Nama')->searchable(),
                 TextColumn::make('role')->label('Peran')->searchable(),
                 IconColumn::make('is_founder')->label('Founder')->boolean(),

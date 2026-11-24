@@ -16,6 +16,12 @@ return [
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
+    | Disk untuk semua gambar konten (foto kegiatan, poster, pengurus, testimoni).
+    | "public" = disk lokal (development), "cloudinary" = production.
+    */
+    'media' => env('MEDIA_DISK', 'public'),
+
+    /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
@@ -45,6 +51,16 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+        ],
+
+        // Gambar disimpan & disajikan dari Cloudinary (lihat App\Filesystem\CloudinaryAdapter).
+        // CLOUDINARY_URL = "API environment variable" di dashboard Cloudinary:
+        // cloudinary://<api_key>:<api_secret>@<cloud_name>
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+            'cloudinary_url' => env('CLOUDINARY_URL'),
+            'folder' => env('CLOUDINARY_FOLDER', 'namaqu'),
+            'throw' => true,
         ],
 
         's3' => [

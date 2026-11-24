@@ -51,8 +51,8 @@ class NamaQuContentSeeder extends Seeder
 
         foreach ($testimonials as [$name, $photo, $message]) {
             $path = 'testimonials/'.$photo;
-            if (! Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->put($path, file_get_contents(__DIR__.'/assets/testimonials/'.$photo));
+            if (! Storage::disk(config('filesystems.media'))->exists($path)) {
+                Storage::disk(config('filesystems.media'))->put($path, file_get_contents(__DIR__.'/assets/testimonials/'.$photo));
             }
 
             Testimonial::firstOrCreate(['name' => $name], [

@@ -12,11 +12,15 @@ class Uploads
 {
     public static function image(string $field, string $directory, int $width = 1600): FileUpload
     {
+        $disk = config('filesystems.media');
+
         return FileUpload::make($field)
             ->image()
-            ->disk('public')
+            ->disk($disk)
             ->directory($directory)
             ->visibility('public')
+            // di Cloudinary, cek ukuran/tipe file = panggilan Admin API (dibatasi kuota) -> lewati
+            ->fetchFileInformation($disk !== 'cloudinary')
             ->maxSize(8192)
             ->automaticallyResizeImagesMode('contain')
             ->automaticallyResizeImagesToWidth((string) $width)

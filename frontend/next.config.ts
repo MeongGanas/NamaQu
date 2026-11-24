@@ -31,16 +31,20 @@ const nextConfig: NextConfig = {
     // Di production gambar dioptimasi & di-cache Vercel, jadi STB jarang dimintai file.
     // Di lokal (backend di localhost/docker) optimasi dimatikan.
     unoptimized: process.env.NODE_ENV !== "production",
-    remotePatterns: apiOrigin
-      ? [
-          {
-            protocol: apiOrigin.protocol.replace(":", "") as "http" | "https",
-            hostname: apiOrigin.hostname,
-            port: apiOrigin.port,
-            pathname: "/**",
-          },
-        ]
-      : [],
+    remotePatterns: [
+      // foto konten di production disimpan & disajikan dari Cloudinary
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+      ...(apiOrigin
+        ? [
+            {
+              protocol: apiOrigin.protocol.replace(":", "") as "http" | "https",
+              hostname: apiOrigin.hostname,
+              port: apiOrigin.port,
+              pathname: "/**",
+            },
+          ]
+        : []),
+    ],
     formats: ["image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },

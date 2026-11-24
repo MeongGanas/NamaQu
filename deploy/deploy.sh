@@ -18,8 +18,10 @@ echo "==> Cache konfigurasi, route, view, ikon & komponen Filament"
 php artisan optimize
 php artisan filament:optimize
 
-echo "==> Izin folder"
-sudo chown -R www-data:www-data storage bootstrap/cache
+echo "==> Izin folder (pemilik: kamu, grup: www-data -> artisan CLI & PHP-FPM sama-sama bisa menulis)"
+sudo chown -R "$USER":www-data storage bootstrap/cache
+sudo chmod -R ug+rwX storage bootstrap/cache
+sudo find storage bootstrap/cache -type d -exec chmod g+s {} +
 
 echo "==> Reload PHP-FPM (bersihkan opcache)"
 sudo systemctl reload php8.5-fpm

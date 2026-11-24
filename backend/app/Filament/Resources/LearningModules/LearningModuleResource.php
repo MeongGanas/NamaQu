@@ -78,7 +78,7 @@ class LearningModuleResource extends Resource
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->columns([
-                ImageColumn::make('cover')->label('')->disk('public')->square(),
+                ImageColumn::make('cover')->label('')->disk(config('filesystems.media'))->square(),
                 TextColumn::make('title')->label('Judul')->searchable()->wrap(),
                 TextColumn::make('level')->label('Tingkat')->badge()
                     ->formatStateUsing(fn ($state) => LearningModule::LEVELS[$state] ?? $state),
