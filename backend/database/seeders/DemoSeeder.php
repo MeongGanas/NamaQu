@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Activity;
 use App\Models\LearningModule;
 use App\Models\Recruitment;
 use App\Models\Testimonial;
@@ -69,20 +68,7 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        foreach ([
-            ['Belajar Minggu: Calistung Ceria', 'weekly', 7],
-            ['Belajar Minggu: Pola & Bilangan', 'weekly', 14],
-            ['Belajar Minggu: Coding Tanpa Komputer', 'weekly', 21],
-            ['Perayaan Hari Anak 2026', 'event', 120],
-        ] as [$title, $type, $daysAgo]) {
-            Activity::firstOrCreate(['title' => $title], [
-                'type' => $type,
-                'held_on' => now()->subDays($daysAgo),
-                'summary' => 'Keseruan adik-adik NamaQu belajar bareng kakak volunteer.',
-                'description' => '<p>Hari ini adik-adik belajar dalam tiga kelompok sesuai tingkat: kecil, sedang, dan besar.</p>',
-                'is_published' => true,
-            ]);
-        }
+        // Dokumentasi kegiatan tidak lagi pakai data contoh: lihat DriveDocumentationSeeder (data asli).
 
         // Testimoni dengan nama disamarkan (untuk menguji fitur persetujuan nama).
         Testimonial::firstOrCreate(['name' => 'Rina Amelia'], [

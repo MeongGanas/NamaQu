@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
         // Profil komunitas, visi-misi, program, modul dari dokumen Drive (sekali jalan, lihat VERSION).
         $this->call(DriveContentSeeder::class);
 
+        // Dokumentasi kegiatan 2025–2026 + QIDS dari Drive (foto sudah di Cloudinary).
+        $this->call(DriveDocumentationSeeder::class);
+
         // Data contoh + akun admin lokal, HANYA untuk development.
         if (app()->isLocal()) {
             $this->call(DemoSeeder::class);

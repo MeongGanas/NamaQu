@@ -19,7 +19,7 @@ class NamaQuTest extends TestCase
     {
         parent::setUp();
         \Illuminate\Support\Facades\Storage::fake('public');
-        $this->seed([SiteSettingSeeder::class, \Database\Seeders\NamaQuContentSeeder::class, \Database\Seeders\DriveContentSeeder::class, DemoSeeder::class]);
+        $this->seed([SiteSettingSeeder::class, \Database\Seeders\NamaQuContentSeeder::class, \Database\Seeders\DriveContentSeeder::class, \Database\Seeders\DriveDocumentationSeeder::class, DemoSeeder::class]);
     }
 
     public static function apiEndpoints(): array
@@ -216,6 +216,27 @@ class NamaQuTest extends TestCase
         $this->assertSame('Bahasa Inggris', $modules->firstWhere('title', 'Bahasa Inggris Dasar')['category_label']);
 
         $this->getJson('/api/activities/kegiatan-perdana-namaqu')->assertJsonPath('data.held_on', '2025-09-06');
+    }
+
+    public function test_drive_documentation_is_seeded_with_photos_and_album(): void
+    {
+        $list = collect($this->getJson('/api/activities?per_page=48')->json('data'));
+        $this->assertGreaterThanOrEqual(9, $list->count());
+
+        $qids = $list->firstWhere('slug', 'qids-2026-pekan-1');
+        $this->assertSame('2026-06-28', $qids['held_on']);
+        $this->assertSame(2, $qids['photo_count']);
+        $this->assertStringEndsWith('activities/photos/qids-2026-pekan-1-01.jpg', $qids['cover']);
+
+        $this->getJson('/api/activities/ramadan-ceria-namaqu-2026')
+            ->assertJsonCount(5, 'data.photos')
+            ->assertJsonPath('data.album_url', 'https://drive.google.com/drive/folders/1dH8HvWtGHyRoKxKdJF73QPGgqWqsYThB');
+
+        // dijalankan lagi tidak menduplikasi & tidak menimpa suntingan admin
+        \App\Models\Activity::where('slug', 'qids-2026-pekan-1')->update(['title' => 'QIDS diedit admin']);
+        $this->seed(\Database\Seeders\DriveDocumentationSeeder::class);
+        $this->assertSame(1, \App\Models\Activity::where('slug', 'qids-2026-pekan-1')->count());
+        $this->assertSame('QIDS diedit admin', \App\Models\Activity::where('slug', 'qids-2026-pekan-1')->value('title'));
     }
 
     public function test_drive_seeder_runs_once_and_keeps_admin_edits(): void
